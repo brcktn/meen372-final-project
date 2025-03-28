@@ -178,4 +178,6 @@ def calc_moments_of_inertia(
         + y_bar**3 * (-2 * t + w) / 3
         + (-2 * t + w) * (t - y_bar) ** 3 / 3
     )
-    return I_xx, None
+    I_yy = h*w**3/12 - 2*h*(-t + w/2)**3/3 + 2*t*(-t + w/2)**3/3
+    
+    return I_xx, I_yy
