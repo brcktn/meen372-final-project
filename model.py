@@ -68,12 +68,13 @@ def model(
         },
         "steel": {"density": 7850, "cost": 1.5, "E": 30e6, "S_y": 50000, "S_UT": 65000},
     }
-    height_lifted = 6.0  # inches
-    force = 3000  # lbs
+    HEIGHT_LIFTED = 6.0  # inches
+    FORCE = 3000  # lbs
+    STARTING_HEIGHT = 3.0 # inches
 
     # Calculated values
-    F_d = calc_diagonal_force(force, start_angle) # (lbs)
-    F_cb = calc_crossbar_force(force, start_angle) # (lbs)
+    F_d = calc_diagonal_force(FORCE, start_angle) # (lbs)
+    F_cb = calc_crossbar_force(FORCE, start_angle) # (lbs)
     E = material_dict[material]["E"] # (psi)
     S_y = material_dict[material]["S_y"] # (psi)
     S_UT = material_dict[material]["S_UT"] # (psi)
