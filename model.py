@@ -49,6 +49,7 @@ def model(
         - Crossbar tensile safety factor
         - Tearout safety factor
         - Bearing stress safety factor
+        - Axial stress safety factor
         - Weight (lbs)
         - Cost ($)
     """
@@ -65,6 +66,7 @@ def model(
         "steel": {"density": 7850, "cost": 1.5, "E": 30e6, "S_y": 50000, "S_UT": 65000},
     }
     HEIGHT_LIFTED = 6.0  # inches
+    HOLE_DIAMETER = 0.5  # inches
     FORCE = 3000  # lbs
 
     # Calculated values
@@ -86,26 +88,45 @@ def model(
         material_thickness,
         hole_offset,
     )
-    
+
     n_buckling = P_cr / F_d
-    n_tensile = S_y / calc_crossbar_stress(
+    n_tensile = material_dict["steel"]["S_y"] / calc_crossbar_stress(
         F_cb,
         crossbar_diameter,
     )
-    n_tearout = S_y / tearoutStress(
+    n_tearout = S_y / calc_tearout_stress(
         hole_offset,
         material_thickness,
         F_d,
     )
-    n_bearing = None
+    n_bearing = S_y / calc_diagonal_bearing_stress(
+        HOLE_DIAMETER,
+        material_thickness,
+        F_d,
+    )
+    n_axial = S_y / calc_diagonal_axial_stress(
+        HOLE_DIAMETER,
+        material_thickness,
+        cross_section_height,
+        F_d,
+    )
     weight = None
     cost = None
+
+    print(f"Diagonal Buckling Safety Factor: {n_buckling:.5f}")
+    print(f"Crossbar Tensile Safety Factor: {n_tensile:.5f}")
+    print(f"Tearout Safety Factor: {n_tearout:.5f}")
+    print(f"Bearing Stress Safety Factor: {n_bearing:.5f}" if n_bearing is not None else "Bearing Stress Safety Factor: Not calculated")
+    print(f"Axial Stress Safety Factor: {n_axial:.5f}")
+    print(f"Weight: {weight:.5f} lbs" if weight is not None else "Weight: Not calculated")
+    print(f"Cost: ${cost:.5f}" if cost is not None else "Cost: Not calculated")
 
     return (
         n_buckling,
         n_tensile,
         n_tearout,
         n_bearing,
+        n_axial,
         weight,
         cost,
     )
@@ -270,33 +291,78 @@ def calc_critical_buckling_load(
     P_cr = C * pi**2 * E * min_I / l**2
     return P_cr
 
-def tearoutStress(
-    de: float, #distance from center of bolt to edge of member (inches)
-    t: float,   #thickness of member (inches)
-    fd: float,  #tearout force (lbs)
-) -> float: #tearout stress
-    return sqrt(3)*fd/(4*de*t)
+def calc_tearout_stress(
+    de: float,  # distance from center of bolt to edge of member (inches)
+    t: float,  # thickness of member (inches)
+    F_d: float,  # tearout force (lbs)
+) -> float:  # tearout stress
+    return sqrt(3) * F_d / (4 * de * t)
 
-def diagAxialStress(
-    dh:float, #diameter of bolt hole
-    t:float,   #thickness of member
-    h:float,   #height of channel
-    fd:float,  #tearout force
-) -> float: #tearout stress
-    return abs(fd/(2*t*(h-dh)))
+def calc_diagonal_axial_stress(
+    d_h: float,  # diameter of bolt hole (inches)
+    t: float,  # thickness of member (inches)
+    h: float,  # height of channel (inches)
+    F_d: float,  # tearout force (lbs)
+) -> float:  # axial stress
+    return abs(F_d / (2 * t * (h - d_h)))
 
-def diagBearingStress(
-    dh:float, #diameter of bolt hole
-    t:float,   #thickness of member
-    fd:float,  #tearout force
-) -> float: #tearout stress
-    return abs(fd/(2*t*dh))
+def calc_diagonal_bearing_stress(
+    d_h: float,  # diameter of bolt hole (inches)
+    t: float,  # thickness of member (inches)
+    F_d: float,  # tearout force (lbs)
+) -> float:  # bearing stress
+    return abs(F_d / (2 * t * d_h))
 
-def crossbarBearingStress(
-    d:float, #diameter crossbar
-    fcb:float,  #tearout force
-) -> float: #tearout stress
-    return abs(fcb/((pi/4)*d**2))
+# I don't think we need this
+# 
+# def calc_crossbar_bearing_stress(
+#     d:float, #diameter crossbar
+#     fcb:float,  #tearout force
+# ) -> float: #tearout stress
+#     return abs(fcb/((pi/4)*d**2))
 
+def calc_weight(
+    l_d: float,  # length of diagonal (inches)
+    h: float,  # cross-section height (inches)
+    w: float,  # cross-section width (inches)
+    t: float,  # material thickness (inches)
+    d_h: float,  # diameter of hole (inches)
+    d_cb: float,  # diameter of crossbar (inches)
+    l_cb: float,  # length of crossbar (inches)
+    density_d: float,  # material density (lb/in^3)
+    density_cb: float,  # material density (lb/in^3)
+) -> float:  # weight (lbs)
+    """
+    Calculates the weight of the jack.
 
+    Parameters
+    ----------
+    l_d : float
+        Length of the diagonal member.
+    h : float
+        Height of the cross-section.
+    w : float
+        Width of the cross-section.
+    t : float
+        Thickness of the material.
+    d_h : float
+        Diameter of the holes.
+    d_cb : float
+        Diameter of the crossbar.
+    l_cb : float
+        Length of the crossbar.
+    desnity : float
+        Density of the material.
 
+    Returns
+    -------
+    float
+        Weight of the jack in pounds.
+    """
+    # Volume of one diagonal member, subtracting the volume of the holes
+    volume_d = l_d * (h * w - (w - 2*t) * (h - t)) - pi * d_h**2 * t
+    # Volume of the crossbar
+    volume_cb = pi * (d_cb / 2) ** 2 * l_cb
+
+    # 4 diagonal members, 1 crossbar
+    return 4 * volume_d * density_d + volume_cb * density_cb  # lbs
