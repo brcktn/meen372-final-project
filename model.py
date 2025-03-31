@@ -263,3 +263,11 @@ def tearoutStress(
     fd:float,  #tearout force
 ) -> float: #tearout stress
     return sqrt(3)*fd/(4*de*t)
+
+def diagAxialStress(
+    dh:float, #diameter of bolt hole
+    t:float,   #thickness of member
+    h:float,   #height of channel
+    fd:float,  #tearout force
+) -> float: #tearout stress
+    return abs(fd/(2*t*(h-dh)))
