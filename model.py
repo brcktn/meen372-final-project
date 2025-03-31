@@ -292,4 +292,11 @@ def diagBearingStress(
 ) -> float: #tearout stress
     return abs(fd/(2*t*dh))
 
+def crossbarBearingStress(
+    d:float, #diameter crossbar
+    fcb:float,  #tearout force
+) -> float: #tearout stress
+    return abs(fcb/((pi/4)*d**2))
+
+
 
