@@ -256,4 +256,9 @@ def calc_critical_buckling_load(
     P_cr = C * pi**2 * E * min_I / l**2
     return P_cr
 
-
+def tearoutStress(
+    de:float, #distance from center of bolt to edge of member
+    t:float,   #thickness of member
+    fd:float,  #tearout force
+) -> float: #tearout stress
+    return sqrt(3)*fd/(4*de*t)
