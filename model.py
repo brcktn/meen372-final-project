@@ -10,7 +10,7 @@ todo:
 - minimize cost using scipy
 """
 
-from numpy import pi, sqrt, sin, cos, radians
+from numpy import pi, sqrt, sin, cos, tan, radians, degrees, arcsin, abs
 
 
 def model(
@@ -20,7 +20,7 @@ def model(
     material_thickness: float,  # inches
     crossbar_diameter: float,  # inches
     hole_offset: float,  # inches
-    start_angle: float,  # degrees
+    start_height: float,  # inches
     material: str,
 ) -> tuple[float, float, float, float, float, float, float]:
     """
@@ -40,8 +40,8 @@ def model(
         The diameter of the crossbar.
     hole_offset : float
         How far the pin is from the end of the diagonal member
-    start_angle : float
-        The angle at which the jack is started.
+    start_height : float
+        The height at which the jack is started.
     material : str
         The material used to make the jack, referenced from material_dict.
 
@@ -70,9 +70,10 @@ def model(
     }
     HEIGHT_LIFTED = 6.0  # inches
     FORCE = 3000  # lbs
-    STARTING_HEIGHT = 3.0 # inches
 
     # Calculated values
+    start_angle = degrees(arcsin(start_height / 2 / length_diagonal)) # (degrees)
+
     F_d = calc_diagonal_force(FORCE, start_angle) # (lbs)
     F_cb = calc_crossbar_force(FORCE, start_angle) # (lbs)
     E = material_dict[material]["E"] # (psi)
@@ -92,7 +93,11 @@ def model(
     
     n_buckling = P_cr / F_d
     n_tensile = None
-    n_tearout = None
+    n_tearout = S_y / tearoutStress(
+        hole_offset,
+        material_thickness,
+        F_d,
+    )
     n_shear = None
     n_bearing = None
     weight = None
@@ -258,9 +263,9 @@ def calc_critical_buckling_load(
     return P_cr
 
 def tearoutStress(
-    de:float, #distance from center of bolt to edge of member
-    t:float,   #thickness of member
-    fd:float,  #tearout force
+    de: float, #distance from center of bolt to edge of member (inches)
+    t: float,   #thickness of member (inches)
+    fd: float,  #tearout force (lbs)
 ) -> float: #tearout stress
     return sqrt(3)*fd/(4*de*t)
 
