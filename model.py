@@ -15,6 +15,15 @@ todo:
 """
 
 from numpy import pi, sqrt, sin, cos, radians
+def tearoutStress(
+    de:float, #distance from center of bolt to edge of member
+    t:float,   #thickness of member
+    fd:float,  #tearout force
+) -> float: #tearout stress
+    return sqrt(3)*fd/(4*de*t)
+
+
+
 
 
 def model(
