@@ -1,10 +1,6 @@
 """
 todo:
-- calculate n_buckling (brock)
-    - calculate the moment of inertia
-    - calculate the critical buckling load
 - calculate n_tensile
-    - calculate force in the crossbar
 - calculate n_tearout
 - calculate n_shear
 - calculate n_bearing
@@ -14,7 +10,7 @@ todo:
 - minimize cost using scipy
 """
 
-from numpy import pi, sqrt, sin, cos, radians
+from numpy import pi, sqrt, sin, cos, tan, radians
 
 
 def model(
@@ -63,19 +59,37 @@ def model(
 
     # Constants
     material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-        "Aluminum": {
+        "aluminum": {
             "density": 2700,
             "cost": 2.5,
             "E": 10e6,
             "S_y": 40000,
             "S_UT": 45000,
         },
-        "Steel": {"density": 7850, "cost": 1.5, "E": 30e6, "S_y": 50000, "S_UT": 65000},
+        "steel": {"density": 7850, "cost": 1.5, "E": 30e6, "S_y": 50000, "S_UT": 65000},
     }
     height_lifted = 6.0  # inches
     force = 3000  # lbs
 
-    n_buckling = None
+    # Calculated values
+    F_d = calc_diagonal_force(force, start_angle) # (lbs)
+    F_cb = calc_crossbar_force(force, start_angle) # (lbs)
+    E = material_dict[material]["E"] # (psi)
+    S_y = material_dict[material]["S_y"] # (psi)
+    S_UT = material_dict[material]["S_UT"] # (psi)
+    density = material_dict[material]["density"] # (lb/in^3)
+    cost = material_dict[material]["cost"] # ($/lb)
+
+    P_cr = calc_critical_buckling_load(
+        E,
+        length_diagonal,
+        cross_section_height,
+        cross_section_width,
+        material_thickness,
+        hole_offset,
+    )
+    
+    n_buckling = P_cr / F_d
     n_tensile = None
     n_tearout = None
     n_shear = None
@@ -99,7 +113,13 @@ def calc_diagonal_force(
     start_angle: float,  # degrees
 ) -> float:  # lbs
     """
-    Calculates the compressive force in the diagonal of the jack.
+    Calculates the compressive force in a single diagonal of the jack.
+    Assumes that maximum force is applied to the jack at the start angle.
+    The force is calculated using the formula:
+           F
+        ────────
+        2⋅sin(θ)
+    where F is the force applied to the jack and θ is the angle at which the jack is started.
 
     Parameters
     ----------
@@ -114,6 +134,34 @@ def calc_diagonal_force(
         The force in the diagonal of the jack (lbs).
     """
     return force / (2 * sin(radians(start_angle)))
+
+
+def calc_crossbar_force(
+    force: float,  # lbs
+    start_angle: float,  # degrees
+) -> float:  # lbs
+    """
+    Calculates the tensile force in the crossbar of the jack.
+    Assumes that maximum force is applied to the jack at the start angle.
+    The force is calculated using the formula:
+           F
+        ────────
+         tan(θ)
+    where F is the force applied to the jack and θ is the angle at which the jack is started.
+
+    Parameters
+    ----------
+    force : float
+        The force applied to the jack.
+    start_angle : float
+        The angle at which the jack is started.
+
+    Returns
+    -------
+    float
+        The force in the crossbar (lbs).
+    """
+    return force / tan(radians(start_angle))
 
 
 def calc_centeroid(
@@ -181,3 +229,31 @@ def calc_moments_of_inertia(
     I_yy = h*w**3/12 - 2*h*(-t + w/2)**3/3 + 2*t*(-t + w/2)**3/3
     
     return I_xx, I_yy
+
+
+def calc_critical_buckling_load(
+    E: float,  # Young's modulus (psi)
+    length_diagonal: float,  # (inches)
+    h: float,  # height of the cross section (inches)
+    w: float,  # Width of the cross section (inches)
+    t: float,  # Thickness of the cross section (inches)
+    hole_offset: float, # distance from end of diagonal to hole (inches)
+) -> float:  # lbs
+    """
+    Calculates the critical buckling load for a given cross section
+    Parameters. Uses Euler's formula for buckling:
+                C⋅π^2⋅E⋅I
+        P_cr = ───────────
+                   l^2
+    where P_cr is the critical buckling load, C is an end condition factor,
+    E is the Young's modulus, I is the smaller moment of inertia, and l
+    is the length of the diagonal between the two pins.
+    """
+    min_I = min(calc_moments_of_inertia(h, w, t)) # smaller of the two moments of inertia
+    l = length_diagonal - 2 * hole_offset  # length of the diagonal between the two pins 
+    C = 1.2  # end condition factor for pinned-pinned
+
+    P_cr = C * pi**2 * E * min_I / l**2
+    return P_cr
+
+
