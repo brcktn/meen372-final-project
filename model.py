@@ -1,7 +1,5 @@
 """
 todo:
-- calculate n_tensile
-- calculate n_shear
 - calculate n_bearing
 - calculate weight
 - calculate cost
@@ -50,7 +48,6 @@ def model(
         - Diagonal buckling safety factor
         - Crossbar tensile safety factor
         - Tearout safety factor
-        - Shear safety factor
         - Bearing stress safety factor
         - Weight (lbs)
         - Cost ($)
@@ -100,7 +97,6 @@ def model(
         material_thickness,
         F_d,
     )
-    n_shear = None
     n_bearing = None
     weight = None
     cost = None
@@ -109,7 +105,6 @@ def model(
         n_buckling,
         n_tensile,
         n_tearout,
-        n_shear,
         n_bearing,
         weight,
         cost,
