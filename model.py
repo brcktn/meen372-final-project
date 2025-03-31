@@ -91,7 +91,10 @@ def model(
     )
     
     n_buckling = P_cr / F_d
-    n_tensile = None
+    n_tensile = S_y / calc_crossbar_stress(
+        F_cb,
+        crossbar_diameter,
+    )
     n_tearout = S_y / tearoutStress(
         hole_offset,
         material_thickness,
@@ -167,6 +170,17 @@ def calc_crossbar_force(
         The force in the crossbar (lbs).
     """
     return force / tan(radians(start_angle))
+
+
+def calc_crossbar_stress(
+    F_cb,  # lbs
+    crossbar_diameter: float,  # inches
+) -> float:  # psi
+    """
+    Calculates the tensile stress in the crossbar of the jack.
+    Assumes that maximum force is applied to the jack at the start angle."""
+    A_cb = pi * (crossbar_diameter / 2) ** 2  # inches^2
+    return F_cb / A_cb  # psi
 
 
 def calc_centeroid(
