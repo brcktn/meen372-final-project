@@ -1,7 +1,6 @@
 """
 todo:
 - calculate n_tensile
-- calculate n_tearout
 - calculate n_shear
 - calculate n_bearing
 - calculate weight
