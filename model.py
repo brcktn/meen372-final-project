@@ -10,7 +10,7 @@ todo:
 - minimize cost using scipy
 """
 
-from numpy import pi, sqrt, sin, cos, radians
+from numpy import pi, sqrt, sin, cos, tan, radians
 
 
 def model(
@@ -91,7 +91,11 @@ def model(
     
     n_buckling = P_cr / F_d
     n_tensile = None
-    n_tearout = None
+    n_tearout = S_y / tearoutStress(
+        cross_section_height / 2,
+        material_thickness,
+        F_d,
+    )
     n_shear = None
     n_bearing = None
     weight = None
@@ -257,8 +261,8 @@ def calc_critical_buckling_load(
     return P_cr
 
 def tearoutStress(
-    de:float, #distance from center of bolt to edge of member
-    t:float,   #thickness of member
-    fd:float,  #tearout force
+    de: float, #distance from center of bolt to edge of member (inches)
+    t: float,   #thickness of member (inches)
+    fd: float,  #tearout force (lbs)
 ) -> float: #tearout stress
     return sqrt(3)*fd/(4*de*t)
