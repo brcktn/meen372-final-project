@@ -10,7 +10,7 @@ todo:
 - minimize cost using scipy
 """
 
-from numpy import pi, sqrt, sin, cos, tan, radians
+from numpy import pi, sqrt, sin, cos, radians
 
 
 def model(
