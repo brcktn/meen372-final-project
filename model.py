@@ -6,48 +6,6 @@ todo:
 
 from numpy import pi, sqrt, sin, cos, tan, radians, degrees, arcsin, abs
 
-#constants
-material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-    "steel": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
-    },
-    "aluminum1": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
-    },
-    "aluminum2": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
-    },
-    "aluminum3": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
-    },
-    "titanium": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
-    },
-}
-HEIGHT_LIFTED = 6.0  # inches
-HOLE_DIAMETER = 0.5  # inches
-FORCE = 3000  # lbs
-
 
 def model(
     length_diagonal: float,  # inches
@@ -95,6 +53,48 @@ def model(
         - Weight (lbs)
         - Cost ($)
     """
+
+    # Constants
+    material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
+        "steel": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "aluminum1": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "aluminum2": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "aluminum3": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "titanium": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+    }
+    HEIGHT_LIFTED = 6.0  # inches
+    HOLE_DIAMETER = 0.5  # inches
+    FORCE = 3000  # lbs
 
     # Calculated values
     start_angle = degrees(arcsin(start_height / 2 / length_diagonal))  # (degrees)
