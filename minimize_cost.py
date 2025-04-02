@@ -1,2 +1,3 @@
-import model
+from model import *
 from scipy.optimize import minimize
+
