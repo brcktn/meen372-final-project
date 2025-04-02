@@ -56,40 +56,40 @@ def model(
 
     # Constants
     material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-        "steel": {  # check values
-            "density": None,
-            "cost": None,
-            "E": None,
-            "S_y": None,
-            "S_UT": None,
+        "steel 1030 1000C": {  # check values 
+            "density": 490,
+            "cost": 2.22,
+            "E": 27600000,
+            "S_y": 75000,
+            "S_UT": 97000,
         },
-        "aluminum1": {  # check values
-            "density": None,
-            "cost": None,
-            "E": None,
-            "S_y": None,
-            "S_UT": None,
+        "AL 3004 h38": {  # check values
+            "density": 170,
+            "cost": 1.13,
+            "E": 10400000,
+            "S_y": 34000,
+            "S_UT": 40000,
         },
-        "aluminum2": {  # check values
-            "density": None,
-            "cost": None,
-            "E": None,
-            "S_y": None,
-            "S_UT": None,
+        "AL 3003 h16": {  # check values
+            "density": 170,
+            "cost": 1.13,
+            "E": 10400000,
+            "S_y": 24000,
+            "S_UT": 26000,
         },
-        "aluminum3": {  # check values
-            "density": None,
-            "cost": None,
-            "E": None,
-            "S_y": None,
-            "S_UT": None,
+        "AL  5052 h32": {  # check values
+            "density": 170,
+            "cost": 1.13,
+            "E": 10400000,
+            "S_y": 27000,
+            "S_UT": 34000,
         },
-        "titanium": {  # check values
-            "density": None,
-            "cost": None,
-            "E": None,
-            "S_y": None,
-            "S_UT": None,
+        "Ti-5Al 2.5Sn": {  # check values
+            "density": 280,
+            "cost": 9,
+            "E": 16500000,
+            "S_y": 75000,
+            "S_UT": 97000,
         },
     }
     HEIGHT_LIFTED = 6.0  # inches
