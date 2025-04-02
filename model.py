@@ -382,4 +382,102 @@ def calc_diagonal_bearing_stress(
 #     return abs(fcb/((pi/4)*d**2))
 
 
+def calc_weight(
+    l_d: float,  # length of diagonal (inches)
+    h: float,  # cross-section height (inches)
+    w: float,  # cross-section width (inches)
+    t: float,  # material thickness (inches)
+    d_h: float,  # diameter of hole (inches)
+    d_cb: float,  # diameter of crossbar (inches)
+    l_cb: float,  # length of crossbar (inches)
+    density_d: float,  # material density (lb/in^3)
+    density_cb: float,  # material density (lb/in^3)
+) -> float:  # weight (lbs)
+    """
+    Calculates the weight of the jack.
 
+    Parameters
+    ----------
+    l_d : float
+        Length of the diagonal member.
+    h : float
+        Height of the cross-section.
+    w : float
+        Width of the cross-section.
+    t : float
+        Thickness of the material.
+    d_h : float
+        Diameter of the holes.
+    d_cb : float
+        Diameter of the crossbar.
+    l_cb : float
+        Length of the crossbar.
+    desnity : float
+        Density of the material.
+
+    Returns
+    -------
+    float
+        Weight of the jack in pounds.
+    """
+    # Volume of one diagonal member, subtracting the volume of the holes
+    volume_d = l_d * (h * w - (w - 2 * t) * (h - t)) - pi * d_h**2 * t
+    # Volume of the crossbar
+    volume_cb = pi * (d_cb / 2) ** 2 * l_cb
+
+    # 4 diagonal members, 1 crossbar
+    return 4 * volume_d * density_d + volume_cb * density_cb  # lbs
+
+
+def calc_cost(
+    l_d: float,  # length of diagonal (inches)
+    h: float,  # cross-section height (inches)
+    w: float,  # cross-section width (inches)
+    t: float,  # material thickness (inches)
+    d_h: float,  # diameter of hole (inches)
+    d_cb: float,  # diameter of crossbar (inches)
+    l_cb: float,  # length of crossbar (inches)
+    density_d: float,  # material density (lb/in^3)
+    density_cb: float,  # material density (lb/in^3)
+    cost_d: float,  # material cost ($/lb)
+    cost_cb: float,  # material cost ($/lb)
+) -> float:  # cost ($)
+    """
+    Calculates the cost of the jack.
+    Parameters
+    ----------
+    l_d : float
+        Length of the diagonal member.
+    h : float
+        Height of the cross-section.
+    w : float
+        Width of the cross-section.
+    t : float
+        Thickness of the material.
+    d_h : float
+        Diameter of the holes.
+    d_cb : float
+        Diameter of the crossbar.
+    l_cb : float
+        Length of the crossbar.
+    density_d : float
+        Density of the diagonal member material.
+    density_cb : float
+        Density of the crossbar material.
+    cost_d : float
+        Cost of the diagonal member material ($/lb).
+    cost_cb : float
+        Cost of the crossbar material ($/lb).
+    Returns
+    -------
+    float
+        Cost of the jack ($).
+    """
+
+    # Volume of one diagonal member, subtracting the volume of the holes
+    volume_d = l_d * (h * w - (w - 2 * t) * (h - t)) - pi * d_h**2 * t
+    # Volume of the crossbar
+    volume_cb = pi * (d_cb / 2) ** 2 * l_cb
+
+    # 4 diagonal members, 1 crossbar
+    return 4 * volume_d * density_d * cost_d + volume_cb * density_cb * cost_cb  # $
