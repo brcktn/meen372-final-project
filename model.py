@@ -1,9 +1,6 @@
 """
 todo:
-- calculate n_bearing
-- calculate weight
-- calculate cost
-
+- add materials
 - minimize cost using scipy
 """
 
@@ -60,27 +57,33 @@ def model(
     # Constants
     material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
         "aluminum": {
-            "density": 2700,
+            "density": 2700 / 12**3,
             "cost": 2.5,
             "E": 10e6,
             "S_y": 40000,
             "S_UT": 45000,
         },
-        "steel": {"density": 7850, "cost": 1.5, "E": 30e6, "S_y": 50000, "S_UT": 65000},
+        "steel": {
+            "density": 7850 / 12**3,
+            "cost": 1.5,
+            "E": 30e6,
+            "S_y": 50000,
+            "S_UT": 65000,
+        },
     }
     HEIGHT_LIFTED = 6.0  # inches
     HOLE_DIAMETER = 0.5  # inches
     FORCE = 3000  # lbs
 
     # Calculated values
-    start_angle = degrees(arcsin(start_height / 2 / length_diagonal)) # (degrees)
-    length_cb = 2 * length_diagonal * cos(radians(start_angle)) # (inches)
+    start_angle = degrees(arcsin(start_height / 2 / length_diagonal))  # (degrees)
+    length_cb = 2 * length_diagonal * cos(radians(start_angle))  # (inches)
 
-    F_d = calc_diagonal_force(FORCE, start_angle) # (lbs)
-    F_cb = calc_crossbar_force(FORCE, start_angle) # (lbs)
-    E = material_dict[material]["E"] # (psi)
-    S_y = material_dict[material]["S_y"] # (psi)
-    S_UT = material_dict[material]["S_UT"] # (psi)
+    F_d = calc_diagonal_force(FORCE, start_angle)  # (lbs)
+    F_cb = calc_crossbar_force(FORCE, start_angle)  # (lbs)
+    E = material_dict[material]["E"]  # (psi)
+    S_y = material_dict[material]["S_y"]  # (psi)
+    S_UT = material_dict[material]["S_UT"]  # (psi)
 
     P_cr = calc_critical_buckling_load(
         E,
@@ -140,9 +143,15 @@ def model(
     print(f"Diagonal Buckling Safety Factor: {n_buckling:.5f}")
     print(f"Crossbar Tensile Safety Factor: {n_tensile:.5f}")
     print(f"Tearout Safety Factor: {n_tearout:.5f}")
-    print(f"Bearing Stress Safety Factor: {n_bearing:.5f}" if n_bearing is not None else "Bearing Stress Safety Factor: Not calculated")
+    print(
+        f"Bearing Stress Safety Factor: {n_bearing:.5f}"
+        if n_bearing is not None
+        else "Bearing Stress Safety Factor: Not calculated"
+    )
     print(f"Axial Stress Safety Factor: {n_axial:.5f}")
-    print(f"Weight: {weight:.5f} lbs" if weight is not None else "Weight: Not calculated")
+    print(
+        f"Weight: {weight:.5f} lbs" if weight is not None else "Weight: Not calculated"
+    )
     print(f"Cost: ${cost:.5f}" if cost is not None else "Cost: Not calculated")
 
     return (
@@ -285,8 +294,8 @@ def calc_moments_of_inertia(
         + y_bar**3 * (-2 * t + w) / 3
         + (-2 * t + w) * (t - y_bar) ** 3 / 3
     )
-    I_yy = h*w**3/12 - 2*h*(-t + w/2)**3/3 + 2*t*(-t + w/2)**3/3
-    
+    I_yy = h * w**3 / 12 - 2 * h * (-t + w / 2) ** 3 / 3 + 2 * t * (-t + w / 2) ** 3 / 3
+
     return I_xx, I_yy
 
 
@@ -296,7 +305,7 @@ def calc_critical_buckling_load(
     h: float,  # height of the cross section (inches)
     w: float,  # Width of the cross section (inches)
     t: float,  # Thickness of the cross section (inches)
-    hole_offset: float, # distance from end of diagonal to hole (inches)
+    hole_offset: float,  # distance from end of diagonal to hole (inches)
 ) -> float:  # lbs
     """
     Calculates the critical buckling load for a given cross section
@@ -308,12 +317,15 @@ def calc_critical_buckling_load(
     E is the Young's modulus, I is the smaller moment of inertia, and l
     is the length of the diagonal between the two pins.
     """
-    min_I = min(calc_moments_of_inertia(h, w, t)) # smaller of the two moments of inertia
-    l = length_diagonal - 2 * hole_offset  # length of the diagonal between the two pins 
+    min_I = min(
+        calc_moments_of_inertia(h, w, t)
+    )  # smaller of the two moments of inertia
+    l = length_diagonal - 2 * hole_offset  # length of the diagonal between the two pins
     C = 1.2  # end condition factor for pinned-pinned
 
     P_cr = C * pi**2 * E * min_I / l**2
     return P_cr
+
 
 def calc_tearout_stress(
     de: float,  # distance from center of bolt to edge of member (inches)
@@ -321,6 +333,7 @@ def calc_tearout_stress(
     F_d: float,  # tearout force (lbs)
 ) -> float:  # tearout stress
     return sqrt(3) * F_d / (4 * de * t)
+
 
 def calc_diagonal_axial_stress(
     d_h: float,  # diameter of bolt hole (inches)
@@ -330,6 +343,7 @@ def calc_diagonal_axial_stress(
 ) -> float:  # axial stress
     return abs(F_d / (2 * t * (h - d_h)))
 
+
 def calc_diagonal_bearing_stress(
     d_h: float,  # diameter of bolt hole (inches)
     t: float,  # thickness of member (inches)
@@ -337,13 +351,15 @@ def calc_diagonal_bearing_stress(
 ) -> float:  # bearing stress
     return abs(F_d / (2 * t * d_h))
 
+
 # I don't think we need this
-# 
+#
 # def calc_crossbar_bearing_stress(
 #     d:float, #diameter crossbar
 #     fcb:float,  #tearout force
 # ) -> float: #tearout stress
 #     return abs(fcb/((pi/4)*d**2))
+
 
 def calc_weight(
     l_d: float,  # length of diagonal (inches)
@@ -384,7 +400,7 @@ def calc_weight(
         Weight of the jack in pounds.
     """
     # Volume of one diagonal member, subtracting the volume of the holes
-    volume_d = l_d * (h * w - (w - 2*t) * (h - t)) - pi * d_h**2 * t
+    volume_d = l_d * (h * w - (w - 2 * t) * (h - t)) - pi * d_h**2 * t
     # Volume of the crossbar
     volume_cb = pi * (d_cb / 2) ** 2 * l_cb
 
@@ -438,11 +454,9 @@ def calc_cost(
     """
 
     # Volume of one diagonal member, subtracting the volume of the holes
-    volume_d = l_d * (h * w - (w - 2*t) * (h - t)) - pi * d_h**2 * t
+    volume_d = l_d * (h * w - (w - 2 * t) * (h - t)) - pi * d_h**2 * t
     # Volume of the crossbar
     volume_cb = pi * (d_cb / 2) ** 2 * l_cb
 
     # 4 diagonal members, 1 crossbar
-    return (
-        4 * volume_d * density_d * cost_d + volume_cb * density_cb * cost_cb
-    )  # $
+    return 4 * volume_d * density_d * cost_d + volume_cb * density_cb * cost_cb  # $
