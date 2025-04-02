@@ -81,6 +81,8 @@ def model(
     density = material_dict[material]["density"] # (lb/in^3)
     cost = material_dict[material]["cost"] # ($/lb)
 
+
+
     P_cr = calc_critical_buckling_load(
         E,
         length_diagonal,
@@ -302,6 +304,4 @@ def crossbarBearingStress(
     fcb:float,  #tearout force
 ) -> float: #tearout stress
     return abs(fcb/((pi/4)*d**2))
-
-
 
