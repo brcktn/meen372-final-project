@@ -56,19 +56,40 @@ def model(
 
     # Constants
     material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-        "aluminum": {
-            "density": 2700 / 12**3,
-            "cost": 2.5,
-            "E": 10e6,
-            "S_y": 40000,
-            "S_UT": 45000,
+        "steel": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
         },
-        "steel": {
-            "density": 7850 / 12**3,
-            "cost": 1.5,
-            "E": 30e6,
-            "S_y": 50000,
-            "S_UT": 65000,
+        "aluminum1": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "aluminum2": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "aluminum3": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
+        },
+        "titanium": {  # check values
+            "density": None,
+            "cost": None,
+            "E": None,
+            "S_y": None,
+            "S_UT": None,
         },
     }
     HEIGHT_LIFTED = 6.0  # inches
