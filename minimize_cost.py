@@ -10,7 +10,7 @@ def con1(x):
     P_cr = calc_critical_buckling_load()
     F_d = calc_diagonal_force()
     n_buckling = P_cr / F_d
-    return n_buckling < 3
+    return n_buckling - 3
 
 
 
