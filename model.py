@@ -98,7 +98,10 @@ def model(
 
     # Calculated values
     start_angle = degrees(arcsin(start_height / 2 / length_diagonal))  # (degrees)
-    length_cb = 2 * length_diagonal * cos(radians(start_angle))  # (inches)
+    length_cb = calc_length_crossbar(
+        length_diagonal,
+        start_height,
+        )
 
     F_d = calc_diagonal_force(FORCE, start_angle)  # (lbs)
     F_cb = calc_crossbar_force(FORCE, start_angle)  # (lbs)
@@ -481,3 +484,14 @@ def calc_cost(
 
     # 4 diagonal members, 1 crossbar
     return 4 * volume_d * density_d * cost_d + volume_cb * density_cb * cost_cb  # $
+
+
+def calc_length_crossbar(
+    length_diagonal: float,  # inches
+    start_height: float,  # inches
+) -> float:  # inches
+    """
+    Calculates the length of the crossbar of the jack.
+    Assumes that the crossbar is exactly the length needed when the jack is at the start height.
+    """
+    return sqrt(length_diagonal**2 - (start_height / 2) ** 2)
