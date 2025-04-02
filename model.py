@@ -23,6 +23,9 @@ def model(
     """
     Calculates the safety factors for a jack made with the given inputs.
 
+    assumes that the crossbar is made of steel and is extactly the
+    length needed when the jack is at the start height
+
     Parameters
     ----------
     length_diagonal : float
@@ -71,14 +74,13 @@ def model(
 
     # Calculated values
     start_angle = degrees(arcsin(start_height / 2 / length_diagonal)) # (degrees)
+    length_cb = 2 * length_diagonal * cos(radians(start_angle)) # (inches)
 
     F_d = calc_diagonal_force(FORCE, start_angle) # (lbs)
     F_cb = calc_crossbar_force(FORCE, start_angle) # (lbs)
     E = material_dict[material]["E"] # (psi)
     S_y = material_dict[material]["S_y"] # (psi)
     S_UT = material_dict[material]["S_UT"] # (psi)
-    density = material_dict[material]["density"] # (lb/in^3)
-    cost = material_dict[material]["cost"] # ($/lb)
 
     P_cr = calc_critical_buckling_load(
         E,
@@ -110,8 +112,30 @@ def model(
         cross_section_height,
         F_d,
     )
-    weight = None
-    cost = None
+    weight = calc_weight(
+        length_diagonal,
+        cross_section_height,
+        cross_section_width,
+        material_thickness,
+        HOLE_DIAMETER,
+        crossbar_diameter,
+        length_cb,
+        material_dict[material]["density"],
+        material_dict["steel"]["density"],
+    )
+    cost = calc_cost(
+        length_diagonal,
+        cross_section_height,
+        cross_section_width,
+        material_thickness,
+        HOLE_DIAMETER,
+        crossbar_diameter,
+        length_cb,
+        material_dict[material]["density"],
+        material_dict["steel"]["density"],
+        material_dict[material]["cost"],
+        material_dict["steel"]["cost"],
+    )
 
     print(f"Diagonal Buckling Safety Factor: {n_buckling:.5f}")
     print(f"Crossbar Tensile Safety Factor: {n_tensile:.5f}")
@@ -366,3 +390,59 @@ def calc_weight(
 
     # 4 diagonal members, 1 crossbar
     return 4 * volume_d * density_d + volume_cb * density_cb  # lbs
+
+
+def calc_cost(
+    l_d: float,  # length of diagonal (inches)
+    h: float,  # cross-section height (inches)
+    w: float,  # cross-section width (inches)
+    t: float,  # material thickness (inches)
+    d_h: float,  # diameter of hole (inches)
+    d_cb: float,  # diameter of crossbar (inches)
+    l_cb: float,  # length of crossbar (inches)
+    density_d: float,  # material density (lb/in^3)
+    density_cb: float,  # material density (lb/in^3)
+    cost_d: float,  # material cost ($/lb)
+    cost_cb: float,  # material cost ($/lb)
+) -> float:  # cost ($)
+    """
+    Calculates the cost of the jack.
+    Parameters
+    ----------
+    l_d : float
+        Length of the diagonal member.
+    h : float
+        Height of the cross-section.
+    w : float
+        Width of the cross-section.
+    t : float
+        Thickness of the material.
+    d_h : float
+        Diameter of the holes.
+    d_cb : float
+        Diameter of the crossbar.
+    l_cb : float
+        Length of the crossbar.
+    density_d : float
+        Density of the diagonal member material.
+    density_cb : float
+        Density of the crossbar material.
+    cost_d : float
+        Cost of the diagonal member material ($/lb).
+    cost_cb : float
+        Cost of the crossbar material ($/lb).
+    Returns
+    -------
+    float
+        Cost of the jack ($).
+    """
+
+    # Volume of one diagonal member, subtracting the volume of the holes
+    volume_d = l_d * (h * w - (w - 2*t) * (h - t)) - pi * d_h**2 * t
+    # Volume of the crossbar
+    volume_cb = pi * (d_cb / 2) ** 2 * l_cb
+
+    # 4 diagonal members, 1 crossbar
+    return (
+        4 * volume_d * density_d * cost_d + volume_cb * density_cb * cost_cb
+    )  # $
