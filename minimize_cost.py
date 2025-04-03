@@ -130,7 +130,7 @@ def con2(x):  # n_buckling 2
 def con3(x):  # n_tensile
     S_y_cb = material_dict["steel 1030 1000C"]["S_y"]
     start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
-    F_cb = calc_diagonal_force(FORCE, start_angle)
+    F_cb = calc_crossbar_force(FORCE, start_angle)
     n_tensile = S_y_cb / calc_crossbar_stress(F_cb, x[4])
 
     return n_tensile - 2
