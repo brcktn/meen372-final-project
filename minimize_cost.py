@@ -2,6 +2,9 @@ from model import *
 from scipy.optimize import minimize
 from numpy import sin, cos, tan, pi, degrees, arcsin
 
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
 """
 x[0]: length_diagonal (float, inches)
 x[1]: cross_section_height (float, inches)
@@ -16,7 +19,7 @@ STARTING_HEIGHT: start_height (float, inches)
 HEIGHT_LIFTED = 6.0  # inches
 HOLE_DIAMETER = 0.5  # inches
 FORCE = 3000  # lbs
-STARTING_HEIGHT = 5.0  # inches
+STARTING_HEIGHT = 6.0  # inches
 DISTANCE_LIFTED = 6.0  # inches
 
 material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
@@ -41,7 +44,7 @@ material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, y
         "S_y": 24000,
         "S_UT": 26000,
     },
-    "AL  5052 h32": {  # check values
+    "AL 5052 h32": {  # check values
         "density": 170 / 12**3,
         "cost": 1.13,
         "E": 10400000,
@@ -56,11 +59,12 @@ material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, y
         "S_UT": 97000,
     },
 }
-cost = material_dict["steel 1030 1000C"]["cost"]  # $/lb
-density = material_dict["steel 1030 1000C"]["density"]  # lb/in^3
-E = material_dict["steel 1030 1000C"]["E"]  # psi
-S_y = material_dict["steel 1030 1000C"]["S_y"]  # psi
-S_UT = material_dict["steel 1030 1000C"]["S_UT"]  # psi
+material = "AL 5052 h32"  # material to be used for the jack
+cost = material_dict[material]["cost"]  # $/lb
+density = material_dict[material]["density"]  # lb/in^3
+E = material_dict[material]["E"]  # psi
+S_y = material_dict[material]["S_y"]  # psi
+S_UT = material_dict[material]["S_UT"]  # psi
 
 
 """
@@ -164,21 +168,28 @@ def con6(x):  # n_axial
     return n_axial - 4
 
 
-def con7(x):  # final angle
+def con7(x): # diagonal long enough to reach height
+    return (x[0] - 2 * x[5]) - (STARTING_HEIGHT + HEIGHT_LIFTED) / 2
+
+def con8(x):  # final angle
     final_angle = degrees(arcsin(((STARTING_HEIGHT + HEIGHT_LIFTED) / 2) / (x[0] - 2 * x[5])))
     return 80 - final_angle
 
 
-def con8(x):  # thickness smaller than cross_section_height
+def con9(x):  # thickness smaller than cross_section_height
     return x[1] - x[3]*2 - x[4]
 
 
-def con9(x):  # thickness smaller than cross_section_width
+def con10(x):  # thickness smaller than cross_section_width
     return x[2] - x[3]*2 - x[4]
 
 
-def con10(x):  # hole offset is reasonable
+def con11(x):  # hole offset is reasonable
     return x[0] - x[5]*10
+
+
+def con12(x): # jack is less than 40 inches wide when closed
+    pass
 
 
 constraints = [
@@ -192,6 +203,7 @@ constraints = [
     {"type": "ineq", "fun": con8},
     {"type": "ineq", "fun": con9},
     {"type": "ineq", "fun": con10},
+    {"type": "ineq", "fun": con11},
 ]
 
 bounds = [
@@ -203,18 +215,46 @@ bounds = [
     (0.51, 1),  # hole_offset
 ]
 
-initial_guess = [15, 2, 2, 0.25, 1, 2]
+initial_guess = [10, 1, 1, 0.25, 1, 0.5]
 
-result = minimize(
-    obj,
-    initial_guess,
-    constraints=constraints,
-    bounds=bounds,
-    method="COBYQA",
-    options={"disp": False, "adaptive": True, "maxiter": 10000, "maxfev": 10000, "initial_tr_radius": 0.01},
-)
+# result = minimize(
+#     obj,
+#     initial_guess,
+#     constraints=constraints,
+#     bounds=bounds,
+#     method="COBYQA",
+#     options={"disp": False, "adaptive": True, "maxiter": 10000, "maxfev": 10000, "initial_tr_radius": 0.01},
+# )
 
-print("Optimization Success:", result.success)  # True if optimization succeeded
-print("Optimal Value of x:", result.x)  # The value of x that minimizes the function
-print("Minimum Function Value:", result.fun)  # The minimum function value
-print("Exit Message:", result.message)
+# print("Optimization Success:", result.success)  # True if optimization succeeded
+# print("Optimal Value of x:", result.x)  # The value of x that minimizes the function
+# print("Minimum Function Value:", result.fun)  # The minimum function value
+# print("Exit Message:", result.message)
+
+results = []
+
+for i in material_dict.keys():  # material to be used for the jack
+    cost = material_dict[i]["cost"]  # $/lb
+    density = material_dict[i]["density"]  # lb/in^3
+    E = material_dict[i]["E"]  # psi
+    S_y = material_dict[i]["S_y"]  # psi
+    S_UT = material_dict[i]["S_UT"]  # psi
+
+    result = minimize(
+        obj,
+        initial_guess,
+        constraints=constraints,
+        bounds=bounds,
+        method="COBYQA",
+        options={"disp": False, "maxiter": 10000, "maxfev": 10000, "initial_tr_radius": 0.01},
+    )
+
+    results.append((i, result.fun, result.x))
+
+print("Results:")
+
+for i in results:
+    print(f"Material: {i[0]}")
+    print(f"Minimum Cost: ${i[1]:.2f}")
+    print(f"Optimal x: {[round(val, 3) for val in i[2]]}")
+    print()
