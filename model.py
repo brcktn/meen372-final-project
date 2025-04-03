@@ -119,7 +119,7 @@ def model(
     )
 
     n_buckling = P_cr / F_d
-    n_tensile = material_dict["steel"]["S_y"] / calc_crossbar_stress(
+    n_tensile = material_dict["steel 1030 1000C"]["S_y"] / calc_crossbar_stress(
         F_cb,
         crossbar_diameter,
     )
@@ -148,7 +148,7 @@ def model(
         crossbar_diameter,
         length_cb,
         material_dict[material]["density"],
-        material_dict["steel"]["density"],
+        material_dict["steel 1030 1000C"]["density"],
     )
     cost = calc_cost(
         length_diagonal,
@@ -159,9 +159,9 @@ def model(
         crossbar_diameter,
         length_cb,
         material_dict[material]["density"],
-        material_dict["steel"]["density"],
+        material_dict["steel 1030 1000C"]["density"],
         material_dict[material]["cost"],
-        material_dict["steel"]["cost"],
+        material_dict["steel 1030 1000C"]["cost"],
     )
 
     print(f"Diagonal Buckling Safety Factor: {n_buckling:.5f}")

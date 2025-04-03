@@ -90,7 +90,7 @@ def obj(x):
 
 
 def con1(x):  # n_buckling 1
-    l = x[0]
+    l = x[0] - 2*x[5]
     h = x[1]
     w = x[2]
     t = x[3]
@@ -112,7 +112,7 @@ def con1(x):  # n_buckling 1
 
 
 def con2(x):  # n_buckling 2
-    l = x[0]
+    l = x[0] - 2*x[5]
     h = x[1]
     w = x[2]
     t = x[3]
