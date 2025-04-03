@@ -171,7 +171,7 @@ constraints = [
 ]
 
 bounds = [
-    (sqrt(STARTING_HEIGHT / 2) ** 2, 20),  # length_diagonal
+    (sqrt((STARTING_HEIGHT / 2) ** 2), 20),  # length_diagonal
     (0.25, 5),  # cross_section_height
     (0.25, 5),  # cross_section_width
     (0.01, 1),  # material_thickness
