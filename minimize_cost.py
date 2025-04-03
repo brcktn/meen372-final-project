@@ -17,47 +17,47 @@ HEIGHT_LIFTED = 6.0  # inches
 HOLE_DIAMETER = 0.5  # inches
 FORCE = 3000  # lbs
 material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-    "steel": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
+    "steel 1030 1000C": {  # check values 
+        "density": 490,
+        "cost": 2.22,
+        "E": 27600000,
+        "S_y": 75000,
+        "S_UT": 97000,
     },
-    "aluminum1": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
+    "AL 3004 h38": {  # check values
+        "density": 170,
+        "cost": 1.13,
+        "E": 10400000,
+        "S_y": 34000,
+        "S_UT": 40000,
     },
-    "aluminum2": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
+    "AL 3003 h16": {  # check values
+        "density": 170,
+        "cost": 1.13,
+        "E": 10400000,
+        "S_y": 24000,
+        "S_UT": 26000,
     },
-    "aluminum3": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
+    "AL  5052 h32": {  # check values
+        "density": 170,
+        "cost": 1.13,
+        "E": 10400000,
+        "S_y": 27000,
+        "S_UT": 34000,
     },
-    "titanium": {  # check values
-        "density": None,
-        "cost": None,
-        "E": None,
-        "S_y": None,
-        "S_UT": None,
+    "Ti-5Al 2.5Sn": {  # check values
+        "density": 280,
+        "cost": 9,
+        "E": 16500000,
+        "S_y": 75000,
+        "S_UT": 97000,
     },
 }
-cost = material_dict["steel"]["cost"]  # $/lb
-density = material_dict["steel"]["density"]  # lb/in^3
-E = material_dict["steel"]["E"]  # psi
-S_y = material_dict["steel"]["S_y"]  # psi
-S_UT = material_dict["steel"]["S_UT"]  # psi
+cost = material_dict["steel 1030 1000C"]["cost"]  # $/lb
+density = material_dict["steel 1030 1000C"]["density"]  # lb/in^3
+E = material_dict["steel 1030 1000C"]["E"]  # psi
+S_y = material_dict["steel 1030 1000C"]["S_y"]  # psi
+S_UT = material_dict["steel 1030 1000C"]["S_UT"]  # psi
 
 def obj(x):
     return calc_cost(
@@ -69,9 +69,9 @@ def obj(x):
         x[4],
         calc_length_crossbar(x[0], x[6]),
         density,
-        material_dict["steel"]["density"],
+        material_dict["steel 1030 1000C"]["density"],
         cost,
-        material_dict["steel"]["cost"],
+        material_dict["steel 1030 1000C"]["cost"],
     )
 
 
@@ -114,7 +114,7 @@ def con2(x):  # n_buckling 2
 
 
 def con3(x):  # n_tensile
-    S_y_cb = material_dict["steel"]["S_y"]
+    S_y_cb = material_dict["steel 1030 1000C"]["S_y"]
     start_angle = degrees(arcsin(x[6] / 2 / x[0]))
     F_cb = calc_diagonal_force(FORCE, start_angle)
     n_tensile = S_y_cb / calc_crossbar_stress(F_cb, x[4])
@@ -149,4 +149,27 @@ def con6(x): # n_axial
     return n_axial - 2
 
 
+constraints = [
+    {"type": "ineq", "fun": con1},
+    {"type": "ineq", "fun": con2},
+    {"type": "ineq", "fun": con3},
+    {"type": "ineq", "fun": con4},
+    {"type": "ineq", "fun": con5},
+    {"type": "ineq", "fun": con6},
+]
 
+bounds = [
+    (0, 20),  # length_diagonal
+    (0, 5),  # cross_section_height
+    (0, 5),  # cross_section_width
+    (0, 1),  # material_thickness
+    (0, 2),  # crossbar_diameter
+    (0, 5),  # hole_offset
+    (0, None),  # start_height
+]
+
+initial_guess = [10, 1, 1, 0.25, 0.5, 1, 4]
+
+result = minimize(obj, initial_guess, constraints=constraints, bounds=bounds)
+
+print(result)

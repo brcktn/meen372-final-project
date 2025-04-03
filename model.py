@@ -6,6 +6,47 @@ todo:
 
 from numpy import pi, sqrt, sin, cos, tan, radians, degrees, arcsin, abs
 
+# Constants
+material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
+    "steel 1030 1000C": {  # check values 
+        "density": 490,
+        "cost": 2.22,
+        "E": 27600000,
+        "S_y": 75000,
+        "S_UT": 97000,
+    },
+    "AL 3004 h38": {  # check values
+        "density": 170,
+        "cost": 1.13,
+        "E": 10400000,
+        "S_y": 34000,
+        "S_UT": 40000,
+    },
+    "AL 3003 h16": {  # check values
+        "density": 170,
+        "cost": 1.13,
+        "E": 10400000,
+        "S_y": 24000,
+        "S_UT": 26000,
+    },
+    "AL  5052 h32": {  # check values
+        "density": 170,
+        "cost": 1.13,
+        "E": 10400000,
+        "S_y": 27000,
+        "S_UT": 34000,
+    },
+    "Ti-5Al 2.5Sn": {  # check values
+        "density": 280,
+        "cost": 9,
+        "E": 16500000,
+        "S_y": 75000,
+        "S_UT": 97000,
+    },
+}
+HEIGHT_LIFTED = 6.0  # inches
+HOLE_DIAMETER = 0.5  # inches
+FORCE = 3000  # lbs
 
 def model(
     length_diagonal: float,  # inches
@@ -53,48 +94,6 @@ def model(
         - Weight (lbs)
         - Cost ($)
     """
-
-    # Constants
-    material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-        "steel 1030 1000C": {  # check values 
-            "density": 490,
-            "cost": 2.22,
-            "E": 27600000,
-            "S_y": 75000,
-            "S_UT": 97000,
-        },
-        "AL 3004 h38": {  # check values
-            "density": 170,
-            "cost": 1.13,
-            "E": 10400000,
-            "S_y": 34000,
-            "S_UT": 40000,
-        },
-        "AL 3003 h16": {  # check values
-            "density": 170,
-            "cost": 1.13,
-            "E": 10400000,
-            "S_y": 24000,
-            "S_UT": 26000,
-        },
-        "AL  5052 h32": {  # check values
-            "density": 170,
-            "cost": 1.13,
-            "E": 10400000,
-            "S_y": 27000,
-            "S_UT": 34000,
-        },
-        "Ti-5Al 2.5Sn": {  # check values
-            "density": 280,
-            "cost": 9,
-            "E": 16500000,
-            "S_y": 75000,
-            "S_UT": 97000,
-        },
-    }
-    HEIGHT_LIFTED = 6.0  # inches
-    HOLE_DIAMETER = 0.5  # inches
-    FORCE = 3000  # lbs
 
     # Calculated values
     start_angle = degrees(arcsin(start_height / 2 / length_diagonal))  # (degrees)
