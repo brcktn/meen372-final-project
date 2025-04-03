@@ -128,7 +128,7 @@ def model(
         material_thickness,
         F_d,
     )
-    n_bearing = S_y / calc_diagonal_bearing_stress(
+    n_bearing = S_y / calc_bearing_stress(
         HOLE_DIAMETER,
         material_thickness,
         F_d,
@@ -368,7 +368,7 @@ def calc_diagonal_axial_stress(
     return abs(F_d / (2 * t * (h - d_h)))
 
 
-def calc_diagonal_bearing_stress(
+def calc_bearing_stress(
     d_h: float,  # diameter of bolt hole (inches)
     t: float,  # thickness of member (inches)
     F_d: float,  # tearout force (lbs)

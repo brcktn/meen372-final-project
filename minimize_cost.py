@@ -59,7 +59,6 @@ E = material_dict["steel"]["E"]  # psi
 S_y = material_dict["steel"]["S_y"]  # psi
 S_UT = material_dict["steel"]["S_UT"]  # psi
 
-
 def obj(x):
     return calc_cost(
         x[0],
@@ -78,7 +77,7 @@ def obj(x):
 
 def con1(x):  # n_buckling 1
     l = x[0]
-    h = x[1]  
+    h = x[1]
     w = x[2]
     t = x[3]
 
@@ -99,21 +98,55 @@ def con1(x):  # n_buckling 1
 
 
 def con2(x):  # n_buckling 2
-    return None
+    l = x[0]
+    h = x[1]
+    w = x[2]
+    t = x[3]
+
+    I_yy = h * w**3 / 12 - 2 * h * (-t + w / 2) ** 3 / 3 + 2 * t * (-t + w / 2) ** 3 / 3
+    P_cr = 1.2 * pi**2 * E * I_yy / l**2
+
+    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+
+    F_d = calc_diagonal_force(FORCE, start_angle)
+    n_buckling = P_cr / F_d
+    return n_buckling - 3
 
 
-# def con3(x):  # tearout constrait
-#     return None
+def con3(x):  # n_tensile
+    S_y_cb = material_dict["steel"]["S_y"]
+    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    F_cb = calc_diagonal_force(FORCE, start_angle)
+    n_tensile = S_y_cb / calc_crossbar_stress(F_cb, x[4])
+
+    return n_tensile - 2
 
 
-# def con4(x):
-#     return None
+def con4(x): # n_tearout
+    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    F_d = calc_diagonal_force(FORCE, start_angle)
+    sigma_tearout = calc_tearout_stress(x[5], x[3], F_d)
+    n_tearout = S_y / sigma_tearout
+
+    return n_tearout - 2.5
 
 
-# if __name__ == "__main__":
+def con5(x): # n_bearing
+    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    F_d = calc_diagonal_force(FORCE, start_angle)
+    sigma_bearing = calc_bearing_stress(HOLE_DIAMETER, x[3], F_d)
+    
+    n_bearing = S_y / sigma_bearing
+    return n_bearing - 2
 
-#     cons = []
-#     x0 = []
-#     bounds = []
 
-#     minimize(calc_cost, x0, bounds=bounds, constraints=cons)
+def con6(x): # n_axial
+    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    F_d = calc_diagonal_force(FORCE, start_angle)
+    sigma_axial = calc_diagonal_axial_stress(HOLE_DIAMETER, x[3], x[1], F_d)
+
+    n_axial = S_y / sigma_axial
+    return n_axial - 2
+
+
+
