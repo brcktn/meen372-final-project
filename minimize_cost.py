@@ -61,6 +61,16 @@ E = material_dict["steel 1030 1000C"]["E"]  # psi
 S_y = material_dict["steel 1030 1000C"]["S_y"]  # psi
 S_UT = material_dict["steel 1030 1000C"]["S_UT"]  # psi
 
+
+"""
+x[0]: length_diagonal (float, inches)
+x[1]: cross_section_height (float, inches)
+x[2]: cross_section_width (float, inches)
+x[3]: material_thickness (float, inches)
+x[4]: crossbar_diameter (float, inches)
+x[5]: hole_offset (float, inches)
+STARTING_HEIGHT: start_height (float, inches)
+"""
 def obj(x):
     return calc_cost(
         x[0],
