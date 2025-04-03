@@ -76,15 +76,30 @@ def obj(x):
     )
 
 
-# def con1(x):  # n_buckling 1
-#     P_cr = calc_critical_buckling_load()
-#     F_d = calc_diagonal_force()
-#     n_buckling = P_cr / F_d
-#     return n_buckling - 3
+def con1(x):  # n_buckling 1
+    l = x[0]
+    h = x[1]  
+    w = x[2]
+    t = x[3]
+
+    y_bar = (t * w - 2 * t**2 + 2 * h**2) / (4 * h + 2 * w - 4 * t)
+    I_xx = (
+        2 * t * y_bar**3 / 3
+        + 2 * t * (h - y_bar) ** 3 / 3
+        + y_bar**3 * (-2 * t + w) / 3
+        + (-2 * t + w) * (t - y_bar) ** 3 / 3
+    )
+    P_cr = 1.2 * pi**2 * E * I_xx / l**2
+
+    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+
+    F_d = calc_diagonal_force(FORCE, start_angle)
+    n_buckling = P_cr / F_d
+    return n_buckling - 3
 
 
-# def con2(x):  # n_buckling 2
-#     return None
+def con2(x):  # n_buckling 2
+    return None
 
 
 # def con3(x):  # tearout constrait
