@@ -47,6 +47,7 @@ material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, y
 HEIGHT_LIFTED = 6.0  # inches
 HOLE_DIAMETER = 0.5  # inches
 FORCE = 3000  # lbs
+STARTING_HEIGHT = 5.0 #inches
 
 def model(
     length_diagonal: float,  # inches
