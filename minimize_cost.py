@@ -17,38 +17,39 @@ HEIGHT_LIFTED = 6.0  # inches
 HOLE_DIAMETER = 0.5  # inches
 FORCE = 3000  # lbs
 STARTING_HEIGHT = 5.0  # inches
+DISTANCE_LIFTED = 6.0  # inches
 
 material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
     "steel 1030 1000C": {  # check values
-        "density": 490,
+        "density": 490 / 12**3,
         "cost": 2.22,
         "E": 27600000,
         "S_y": 75000,
         "S_UT": 97000,
     },
     "AL 3004 h38": {  # check values
-        "density": 170,
+        "density": 170 / 12**3,
         "cost": 1.13,
         "E": 10400000,
         "S_y": 34000,
         "S_UT": 40000,
     },
     "AL 3003 h16": {  # check values
-        "density": 170,
+        "density": 170 / 12**3,
         "cost": 1.13,
         "E": 10400000,
         "S_y": 24000,
         "S_UT": 26000,
     },
     "AL  5052 h32": {  # check values
-        "density": 170,
+        "density": 170 / 12**3,
         "cost": 1.13,
         "E": 10400000,
         "S_y": 27000,
         "S_UT": 34000,
     },
     "Ti-5Al 2.5Sn": {  # check values
-        "density": 280,
+        "density": 280 / 12**3,
         "cost": 9,
         "E": 16500000,
         "S_y": 75000,
@@ -163,6 +164,11 @@ def con6(x):  # n_axial
     return n_axial - 2
 
 
+def con7(x):  # final angle
+    final_angle = degrees(arcsin(((STARTING_HEIGHT + HEIGHT_LIFTED) / 2) / x[0]))
+    return 80 - final_angle
+
+
 constraints = [
     {"type": "ineq", "fun": con1},
     {"type": "ineq", "fun": con2},
@@ -170,6 +176,7 @@ constraints = [
     {"type": "ineq", "fun": con4},
     {"type": "ineq", "fun": con5},
     {"type": "ineq", "fun": con6},
+    {"type": "ineq", "fun": con7},
 ]
 
 bounds = [
@@ -188,7 +195,7 @@ result = minimize(
     initial_guess,
     constraints=constraints,
     bounds=bounds,
-    method="cobyla",
+    method="SLSQP",
     options={"disp": True, "adaptive": True, "maxiter": 10000, "maxfev": 10000},
 )
 
