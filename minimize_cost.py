@@ -16,10 +16,10 @@ STARTING_HEIGHT: start_height (float, inches)
 HEIGHT_LIFTED = 6.0  # inches
 HOLE_DIAMETER = 0.5  # inches
 FORCE = 3000  # lbs
-STARTING_HEIGHT = 5.0 #inches
+STARTING_HEIGHT = 5.0  # inches
 
 material_dict = {  # density in lb/in^3, cost in $/lb, Young's modulus in psi, yield strength in psi, ultimate tensile strength in psi
-    "steel 1030 1000C": {  # check values 
+    "steel 1030 1000C": {  # check values
         "density": 490,
         "cost": 2.22,
         "E": 27600000,
@@ -71,6 +71,8 @@ x[4]: crossbar_diameter (float, inches)
 x[5]: hole_offset (float, inches)
 STARTING_HEIGHT: start_height (float, inches)
 """
+
+
 def obj(x):
     return calc_cost(
         x[0],
@@ -134,7 +136,7 @@ def con3(x):  # n_tensile
     return n_tensile - 2
 
 
-def con4(x): # n_tearout
+def con4(x):  # n_tearout
     start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_tearout = calc_tearout_stress(x[5], x[3], F_d)
@@ -143,16 +145,16 @@ def con4(x): # n_tearout
     return n_tearout - 2.5
 
 
-def con5(x): # n_bearing
+def con5(x):  # n_bearing
     start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_bearing = calc_bearing_stress(HOLE_DIAMETER, x[3], F_d)
-    
+
     n_bearing = S_y / sigma_bearing
     return n_bearing - 2
 
 
-def con6(x): # n_axial
+def con6(x):  # n_axial
     start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_axial = calc_diagonal_axial_stress(HOLE_DIAMETER, x[3], x[1], F_d)
@@ -171,7 +173,7 @@ constraints = [
 ]
 
 bounds = [
-    ((STARTING_HEIGHT), 20),  # length_diagonal
+    (STARTING_HEIGHT, 20),  # length_diagonal
     (0.25, 5),  # cross_section_height
     (0.25, 5),  # cross_section_width
     (0.01, 1),  # material_thickness
@@ -181,6 +183,16 @@ bounds = [
 
 initial_guess = [15, 2, 2, 0.25, 1, 2]
 
-result = minimize(obj, initial_guess, constraints=constraints, bounds=bounds,method='Nelder-Mead', options={'disp':True, 'adaptive':True,'maxiter':10000,'maxfev':10000})
+result = minimize(
+    obj,
+    initial_guess,
+    constraints=constraints,
+    bounds=bounds,
+    method="cobyla",
+    options={"disp": True, "adaptive": True, "maxiter": 10000, "maxfev": 10000},
+)
 
-print(result)
+print("Optimization Success:", result.success)   # True if optimization succeeded
+print("Optimal Value of x:", result.x)          # The value of x that minimizes the function
+print("Minimum Function Value:", result.fun)    # The minimum function value
+print("Exit Message:", result.message)  
