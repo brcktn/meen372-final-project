@@ -9,7 +9,7 @@ x[2]: cross_section_width (float, inches)
 x[3]: material_thickness (float, inches)
 x[4]: crossbar_diameter (float, inches)
 x[5]: hole_offset (float, inches)
-x[6]: start_height (float, inches)
+STARTING_HEIGHT: start_height (float, inches)
 """
 
 # Constants
@@ -69,7 +69,7 @@ def obj(x):
         x[3],
         HOLE_DIAMETER,
         x[4],
-        calc_length_crossbar(x[0], x[6]),
+        calc_length_crossbar(x[0], STARTING_HEIGHT),
         density,
         material_dict["steel 1030 1000C"]["density"],
         cost,
@@ -92,7 +92,7 @@ def con1(x):  # n_buckling 1
     )
     P_cr = 1.2 * pi**2 * E * I_xx / l**2
 
-    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    start_angle = degrees(arcsin(STARTING_HEIGHT / 2 / x[0]))
 
     F_d = calc_diagonal_force(FORCE, start_angle)
     n_buckling = P_cr / F_d
@@ -108,7 +108,7 @@ def con2(x):  # n_buckling 2
     I_yy = h * w**3 / 12 - 2 * h * (-t + w / 2) ** 3 / 3 + 2 * t * (-t + w / 2) ** 3 / 3
     P_cr = 1.2 * pi**2 * E * I_yy / l**2
 
-    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    start_angle = degrees(arcsin(STARTING_HEIGHT / 2 / x[0]))
 
     F_d = calc_diagonal_force(FORCE, start_angle)
     n_buckling = P_cr / F_d
@@ -117,7 +117,7 @@ def con2(x):  # n_buckling 2
 
 def con3(x):  # n_tensile
     S_y_cb = material_dict["steel 1030 1000C"]["S_y"]
-    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    start_angle = degrees(arcsin(STARTING_HEIGHT / 2 / x[0]))
     F_cb = calc_diagonal_force(FORCE, start_angle)
     n_tensile = S_y_cb / calc_crossbar_stress(F_cb, x[4])
 
@@ -125,7 +125,7 @@ def con3(x):  # n_tensile
 
 
 def con4(x): # n_tearout
-    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    start_angle = degrees(arcsin(STARTING_HEIGHT / 2 / x[0]))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_tearout = calc_tearout_stress(x[5], x[3], F_d)
     n_tearout = S_y / sigma_tearout
@@ -134,7 +134,7 @@ def con4(x): # n_tearout
 
 
 def con5(x): # n_bearing
-    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    start_angle = degrees(arcsin(STARTING_HEIGHT / 2 / x[0]))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_bearing = calc_bearing_stress(HOLE_DIAMETER, x[3], F_d)
     
@@ -143,7 +143,7 @@ def con5(x): # n_bearing
 
 
 def con6(x): # n_axial
-    start_angle = degrees(arcsin(x[6] / 2 / x[0]))
+    start_angle = degrees(arcsin(STARTING_HEIGHT / 2 / x[0]))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_axial = calc_diagonal_axial_stress(HOLE_DIAMETER, x[3], x[1], F_d)
 
@@ -161,17 +161,16 @@ constraints = [
 ]
 
 bounds = [
-    (0, 20),  # length_diagonal
-    (0, 5),  # cross_section_height
-    (0, 5),  # cross_section_width
-    (0, 1),  # material_thickness
-    (0, 2),  # crossbar_diameter
-    (0, 5),  # hole_offset
-    (0, None),  # start_height
+    (sqrt(STARTING_HEIGHT / 2) ** 2, 20),  # length_diagonal
+    (0.25, 5),  # cross_section_height
+    (0.25, 5),  # cross_section_width
+    (0.01, 1),  # material_thickness
+    (0.2, 2),  # crossbar_diameter
+    (0.51, 5),  # hole_offset
 ]
 
-initial_guess = [10, 1, 1, 0.25, 0.5, 1, 4]
+initial_guess = [15, 2, 2, 0.25, 1, 2]
 
-result = minimize(obj, initial_guess, constraints=constraints, bounds=bounds)
+result = minimize(obj, initial_guess, constraints=constraints, bounds=bounds,method='Nelder-Mead', options={'disp':True, 'adaptive':True,'maxiter':10000,'maxfev':10000})
 
 print(result)
