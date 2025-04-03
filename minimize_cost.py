@@ -125,12 +125,12 @@ def con2(x):  # n_buckling 2
 
     F_d = calc_diagonal_force(FORCE, start_angle)
     n_buckling = P_cr / F_d
-    return n_buckling - 10
+    return n_buckling - 6
 
 
 def con3(x):  # n_tensile
     S_y_cb = material_dict["steel 1030 1000C"]["S_y"]
-    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
+    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / (x[0] - 2 * x[5])))
     F_cb = calc_crossbar_force(FORCE, start_angle)
     n_tensile = S_y_cb / calc_crossbar_stress(F_cb, x[4])
 
@@ -138,7 +138,7 @@ def con3(x):  # n_tensile
 
 
 def con4(x):  # n_tearout
-    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
+    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / (x[0] - 2 * x[5])))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_tearout = calc_tearout_stress(x[5], x[3], F_d)
     n_tearout = S_y / sigma_tearout
@@ -147,7 +147,7 @@ def con4(x):  # n_tearout
 
 
 def con5(x):  # n_bearing
-    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
+    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / (x[0] - 2 * x[5])))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_bearing = calc_bearing_stress(HOLE_DIAMETER, x[3], F_d)
 
@@ -156,7 +156,7 @@ def con5(x):  # n_bearing
 
 
 def con6(x):  # n_axial
-    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / x[0]))
+    start_angle = degrees(arcsin((STARTING_HEIGHT / 2) / (x[0] - 2 * x[5])))
     F_d = calc_diagonal_force(FORCE, start_angle)
     sigma_axial = calc_diagonal_axial_stress(HOLE_DIAMETER, x[3], x[1], F_d)
 
@@ -165,8 +165,20 @@ def con6(x):  # n_axial
 
 
 def con7(x):  # final angle
-    final_angle = degrees(arcsin(((STARTING_HEIGHT + HEIGHT_LIFTED) / 2) / x[0]))
+    final_angle = degrees(arcsin(((STARTING_HEIGHT + HEIGHT_LIFTED) / 2) / (x[0] - 2 * x[5])))
     return 80 - final_angle
+
+
+def con8(x):  # thickness smaller than cross_section_height
+    return x[1] - x[3]*2 - x[4]
+
+
+def con9(x):  # thickness smaller than cross_section_width
+    return x[2] - x[3]*2 - x[4]
+
+
+def con10(x):  # hole offset is reasonable
+    return x[0] - x[5]*10
 
 
 constraints = [
@@ -177,6 +189,9 @@ constraints = [
     {"type": "ineq", "fun": con5},
     {"type": "ineq", "fun": con6},
     {"type": "ineq", "fun": con7},
+    {"type": "ineq", "fun": con8},
+    {"type": "ineq", "fun": con9},
+    {"type": "ineq", "fun": con10},
 ]
 
 bounds = [
@@ -185,7 +200,7 @@ bounds = [
     (0.25, 5),  # cross_section_width
     (0.01, 1),  # material_thickness
     (0.2, 2),  # crossbar_diameter
-    (0.51, 5),  # hole_offset
+    (0.51, 1),  # hole_offset
 ]
 
 initial_guess = [15, 2, 2, 0.25, 1, 2]
