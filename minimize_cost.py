@@ -109,7 +109,7 @@ def con1(x):  # n_buckling 1
 
     F_d = calc_diagonal_force(FORCE, start_angle)
     n_buckling = P_cr / F_d
-    return n_buckling - 3
+    return n_buckling - 10
 
 
 def con2(x):  # n_buckling 2
@@ -125,7 +125,7 @@ def con2(x):  # n_buckling 2
 
     F_d = calc_diagonal_force(FORCE, start_angle)
     n_buckling = P_cr / F_d
-    return n_buckling - 3
+    return n_buckling - 10
 
 
 def con3(x):  # n_tensile
@@ -134,7 +134,7 @@ def con3(x):  # n_tensile
     F_cb = calc_crossbar_force(FORCE, start_angle)
     n_tensile = S_y_cb / calc_crossbar_stress(F_cb, x[4])
 
-    return n_tensile - 2
+    return n_tensile - 4
 
 
 def con4(x):  # n_tearout
@@ -143,7 +143,7 @@ def con4(x):  # n_tearout
     sigma_tearout = calc_tearout_stress(x[5], x[3], F_d)
     n_tearout = S_y / sigma_tearout
 
-    return n_tearout - 2.5
+    return n_tearout - 5
 
 
 def con5(x):  # n_bearing
@@ -152,7 +152,7 @@ def con5(x):  # n_bearing
     sigma_bearing = calc_bearing_stress(HOLE_DIAMETER, x[3], F_d)
 
     n_bearing = S_y / sigma_bearing
-    return n_bearing - 2
+    return n_bearing - 4
 
 
 def con6(x):  # n_axial
@@ -161,7 +161,7 @@ def con6(x):  # n_axial
     sigma_axial = calc_diagonal_axial_stress(HOLE_DIAMETER, x[3], x[1], F_d)
 
     n_axial = S_y / sigma_axial
-    return n_axial - 2
+    return n_axial - 4
 
 
 def con7(x):  # final angle
@@ -180,7 +180,7 @@ constraints = [
 ]
 
 bounds = [
-    (STARTING_HEIGHT, 20),  # length_diagonal
+    (STARTING_HEIGHT/2, 20),  # length_diagonal
     (0.25, 5),  # cross_section_height
     (0.25, 5),  # cross_section_width
     (0.01, 1),  # material_thickness
@@ -195,8 +195,8 @@ result = minimize(
     initial_guess,
     constraints=constraints,
     bounds=bounds,
-    method="SLSQP",
-    options={"disp": True, "adaptive": True, "maxiter": 10000, "maxfev": 10000},
+    method="COBYQA",
+    options={"disp": False, "adaptive": True, "maxiter": 10000, "maxfev": 10000, "initial_tr_radius": 0.01},
 )
 
 print("Optimization Success:", result.success)  # True if optimization succeeded
