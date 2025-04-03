@@ -1,6 +1,6 @@
 from model import *
 from scipy.optimize import minimize
-from numpy import sin, cos, tan, pi
+from numpy import sin, cos, tan, pi, degrees, arcsin
 
 """
 x[0]: length_diagonal (float, inches)
