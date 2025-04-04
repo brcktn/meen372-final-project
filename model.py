@@ -97,7 +97,7 @@ def model(
     """
 
     # Calculated values
-    start_angle = degrees(arcsin(start_height / 2 / length_diagonal))  # (degrees)
+    start_angle = degrees(arcsin(start_height / 2 / (length_diagonal-2*hole_offset)))  # (degrees)
     length_cb = calc_length_crossbar(
         length_diagonal,
         start_height,
